@@ -1,0 +1,233 @@
+@import "tailwindcss";
+@config "../../tailwind.config.ts";
+
+:root {
+  /* Premium Orange & White Theme */
+  --color-background: #fafaf9;
+  --color-foreground: #09090b;
+  --color-muted: #71717a;
+  --color-border: #e4e4e7;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f4f4f5;
+  --color-secondary: #a1a1aa;
+  --color-accent: #f97316;
+  --color-accent-hover: #ea580c;
+  --color-accent-light: #fb923c;
+  --color-accent-dark: #c2410c;
+  --color-navy: #18181b;
+  --color-overlay: rgba(9, 9, 11, 0.6);
+  --color-focus-ring: rgba(249, 115, 22, 0.25);
+  --gradient-hero: linear-gradient(180deg, #fff7ed 0%, #ffffff 40%, #fafaf9 100%);
+  --gradient-orange: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  --gradient-orange-warm: linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%);
+  --gradient-navy: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+  --mesh-orange: rgba(249, 115, 22, 0.09);
+  --mesh-amber: rgba(245, 158, 11, 0.05);
+
+  --color-success-bg: #ecfdf5;
+  --color-success-text: #047857;
+  --color-success-border: #6ee7b7;
+  --color-warning-bg: #fffbeb;
+  --color-warning-text: #b45309;
+  --color-warning-border: #fcd34d;
+  --color-danger-bg: #fef2f2;
+  --color-danger-text: #dc2626;
+  --color-danger-border: #fca5a5;
+}
+
+.dark {
+  --color-background: #fafaf9;
+  --color-foreground: #09090b;
+  --color-muted: #71717a;
+  --color-border: #e4e4e7;
+  --color-surface: #ffffff;
+  --color-surface-hover: #f4f4f5;
+  --color-secondary: #a1a1aa;
+  --color-accent: #f97316;
+  --color-accent-hover: #ea580c;
+  --color-accent-light: #fb923c;
+  --color-accent-dark: #c2410c;
+  --color-navy: #18181b;
+  --color-overlay: rgba(9, 9, 11, 0.4);
+  --color-focus-ring: rgba(249, 115, 22, 0.25);
+  --gradient-hero: linear-gradient(180deg, #fff7ed 0%, #ffffff 40%, #fafaf9 100%);
+  --mesh-orange: rgba(249, 115, 22, 0.09);
+  --mesh-amber: rgba(245, 158, 11, 0.05);
+
+  --color-success-bg: #ecfdf5;
+  --color-success-text: #047857;
+  --color-success-border: #6ee7b7;
+  --color-warning-bg: #fffbeb;
+  --color-warning-text: #b45309;
+  --color-warning-border: #fcd34d;
+  --color-danger-bg: #fef2f2;
+  --color-danger-text: #dc2626;
+  --color-danger-border: #fca5a5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body,
+button,
+input,
+textarea,
+select,
+optgroup {
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: rgba(249, 115, 22, 0.22);
+  color: #09090b;
+}
+
+@keyframes pulse-opacity {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.animate-pulse-flat {
+  animation: pulse-opacity 1.5s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+@keyframes mesh-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(2%, -2%) scale(1.03);
+  }
+  66% {
+    transform: translate(-1%, 2%) scale(0.98);
+  }
+}
+
+.animate-mesh {
+  animation: mesh-drift 18s ease-in-out infinite;
+}
+
+.bg-hero-gradient {
+  background: var(--gradient-hero);
+}
+
+.bg-gradient-orange {
+  background: var(--gradient-orange);
+}
+
+.bg-gradient-orange-warm {
+  background: var(--gradient-orange-warm);
+}
+
+.bg-gradient-blue {
+  background: var(--gradient-orange);
+}
+
+.bg-gradient-navy {
+  background: var(--gradient-navy);
+}
+
+.text-gradient-orange {
+  background: var(--gradient-orange);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-orange-warm {
+  background: var(--gradient-orange-warm);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-blue {
+  background: var(--gradient-orange);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.dark .glass {
+  background: rgba(18, 18, 21, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(228, 228, 231, 0.8);
+}
+
+.dark .glass-card {
+  background: rgba(18, 18, 21, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(39, 39, 42, 0.8);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

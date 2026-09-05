@@ -1,0 +1,1892 @@
+{
+    "info": {
+      "name": "Internship & Job Application Portal - Backend API (v2)",
+      "_postman_id": "9d38bd2f-6eac-4f56-a641-0e7ade21c0d5",
+      "description": "Matches the actual built backend exactly. Folders are ordered to match the required dependency chain: register/login -> profile -> company -> company approval -> job -> job approval -> apply -> interview -> dashboard -> admin views -> negative tests -> cleanup (run last, it's destructive). Run npm run seed first so the admin/candidate/recruiter accounts referenced in Auth exist, OR just use the Register requests here instead of the seeded accounts.",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+      {
+        "key": "base_url",
+        "value": "http://localhost:5000/api"
+      },
+      {
+        "key": "candidate_token",
+        "value": ""
+      },
+      {
+        "key": "recruiter_token",
+        "value": ""
+      },
+      {
+        "key": "recruiter2_token",
+        "value": ""
+      },
+      {
+        "key": "admin_token",
+        "value": ""
+      },
+      {
+        "key": "company_id",
+        "value": ""
+      },
+      {
+        "key": "job_id",
+        "value": ""
+      },
+      {
+        "key": "application_id",
+        "value": ""
+      },
+      {
+        "key": "interview_id",
+        "value": ""
+      },
+      {
+        "key": "candidate_user_id",
+        "value": ""
+      }
+    ],
+    "item": [
+      {
+        "name": "1. Auth",
+        "description": "Run first. Uses fresh Register+Login accounts by default so it doesn't depend on seed data (except the Admin login, which needs 'npm run seed' to have been run at least once).",
+        "item": [
+          {
+            "name": "Register Candidate",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/register",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "register"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Ali Candidate\",\n  \"email\": \"ali.postman@test.com\",\n  \"password\": \"Candidate@123\",\n  \"role\": \"candidate\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Register Recruiter",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/register",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "register"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Sara Recruiter\",\n  \"email\": \"sara.postman@test.com\",\n  \"password\": \"Recruiter@123\",\n  \"role\": \"recruiter\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Register Recruiter 2 (for negative test)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/register",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "register"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Bilal Recruiter\",\n  \"email\": \"bilal.postman@test.com\",\n  \"password\": \"Recruiter@123\",\n  \"role\": \"recruiter\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Register As Admin - Should Fail With 403",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/register",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "register"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Fake Admin\",\n  \"email\": \"fakeadmin.postman@test.com\",\n  \"password\": \"Admin@1234\",\n  \"role\": \"admin\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Blocked with 403', function () { pm.response.to.have.status(403); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Login Candidate",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/login",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "login"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"ali.postman@test.com\",\n  \"password\": \"Candidate@123\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data.token) { pm.collectionVariables.set('candidate_token', jsonData.data.token); }",
+                    "if (jsonData.data.user._id) { pm.collectionVariables.set('candidate_user_id', jsonData.data.user._id); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Login Recruiter",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/login",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "login"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"sara.postman@test.com\",\n  \"password\": \"Recruiter@123\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data.token) { pm.collectionVariables.set('recruiter_token', jsonData.data.token); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Login Recruiter 2",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/login",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "login"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"bilal.postman@test.com\",\n  \"password\": \"Recruiter@123\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data.token) { pm.collectionVariables.set('recruiter2_token', jsonData.data.token); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Login Admin (requires npm run seed to have been run)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/login",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "login"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"Admin@1234\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data.token) { pm.collectionVariables.set('admin_token', jsonData.data.token); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Get Current User (Me)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/me",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "me"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "2. Candidate Profile",
+        "description": "",
+        "item": [
+          {
+            "name": "Get My Profile (empty shell before first update)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/profile",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "profile"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Update My Profile",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/profile",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "profile"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"headline\": \"Junior Full-Stack Developer\",\n  \"skills\": [\n    \"React\",\n    \"Node.js\",\n    \"MongoDB\"\n  ],\n  \"education\": [\n    {\n      \"degree\": \"BSCS\",\n      \"institution\": \"Lahore Leads University\",\n      \"year\": 2026\n    }\n  ],\n  \"experience\": [\n    {\n      \"company\": \"Code-XA\",\n      \"role\": \"Intern Dev\",\n      \"startDate\": \"2025-01-01\",\n      \"endDate\": \"2025-06-01\",\n      \"description\": \"Built internal tools\"\n    }\n  ],\n  \"resumeUrl\": \"https://example.com/resume/ali.pdf\",\n  \"portfolioUrl\": \"https://ali.dev\"\n}"
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "3. Company",
+        "description": "Company must be admin-approved before the recruiter can post jobs \u2014 that approval step lives here so the flow order matches reality.",
+        "item": [
+          {
+            "name": "Create Company (Recruiter)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/companies",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "companies"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"name\": \"Triad Labz\",\n  \"website\": \"https://triadlabz.com\",\n  \"location\": \"Lahore, PK\",\n  \"description\": \"Software product studio\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data._id) { pm.collectionVariables.set('company_id', jsonData.data._id); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Get My Company (still pending)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/companies/my-company",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "companies",
+                  "my-company"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Approve Company (Admin) - required before recruiter can post jobs",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/companies/{{company_id}}/approve",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "companies",
+                  "{{company_id}}",
+                  "approve"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"approvalStatus\": \"approved\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Update My Company (resets to pending again)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/companies/{{company_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "companies",
+                  "{{company_id}}"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"description\": \"Software product studio - updated description\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Re-Approve Company After Edit (Admin)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/companies/{{company_id}}/approve",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "companies",
+                  "{{company_id}}",
+                  "approve"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"approvalStatus\": \"approved\"\n}"
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "4. Jobs",
+        "description": "Includes a request that intentionally fails (posting a job under an unapproved company) to prove that rule is enforced.",
+        "item": [
+          {
+            "name": "Create Job Before Company Approved - Should Fail With 403",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter2_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"title\": \"Should Fail\",\n  \"description\": \"Recruiter2's company was never approved\",\n  \"type\": \"internship\",\n  \"workMode\": \"remote\",\n  \"location\": \"Lahore\",\n  \"deadline\": \"2026-12-31\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Blocked - company not approved', function () { pm.response.to.have.status(400); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Create Job (Recruiter, company now approved)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"title\": \"Junior Backend Developer\",\n  \"description\": \"Work on Node.js/Express APIs for internal tools.\",\n  \"skills\": [\n    \"Node.js\",\n    \"Express\",\n    \"MongoDB\"\n  ],\n  \"type\": \"internship\",\n  \"workMode\": \"hybrid\",\n  \"location\": \"Lahore, PK\",\n  \"salaryMin\": 30000,\n  \"salaryMax\": 50000,\n  \"deadline\": \"2026-12-31\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data._id) { pm.collectionVariables.set('job_id', jsonData.data._id); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Get Public Jobs - New Job Should NOT Appear Yet (still pending)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs"
+                ],
+                "query": [
+                  {
+                    "key": "keyword",
+                    "value": "backend"
+                  }
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Get Job By Id As Owner (visible even though pending)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs/{{job_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs",
+                  "{{job_id}}"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Approve Job (Admin only)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs/{{job_id}}/approve",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs",
+                  "{{job_id}}",
+                  "approve"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"approved\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get Public Jobs - Now Appears (approved)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs"
+                ],
+                "query": [
+                  {
+                    "key": "keyword",
+                    "value": "backend"
+                  },
+                  {
+                    "key": "location",
+                    "value": "Lahore"
+                  },
+                  {
+                    "key": "workMode",
+                    "value": "hybrid"
+                  },
+                  {
+                    "key": "type",
+                    "value": "internship"
+                  },
+                  {
+                    "key": "skills",
+                    "value": "Node.js,MongoDB"
+                  },
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Update Job (Recruiter, ownership check, resets to pending)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs/{{job_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs",
+                  "{{job_id}}"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"salaryMax\": 60000\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Re-Approve Job After Edit (Admin)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs/{{job_id}}/approve",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs",
+                  "{{job_id}}",
+                  "approve"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"approved\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Update Job As Wrong Recruiter - Should Fail With 403",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter2_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs/{{job_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs",
+                  "{{job_id}}"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"salaryMax\": 99999\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Blocked - not job owner', function () { pm.response.to.have.status(403); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Get Applicants For Job (Recruiter, ownership check)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs/{{job_id}}/applications",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs",
+                  "{{job_id}}",
+                  "applications"
+                ],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "5. Applications",
+        "description": "",
+        "item": [
+          {
+            "name": "Apply To Job (Candidate)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/jobs/{{job_id}}/apply",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "jobs",
+                  "{{job_id}}",
+                  "apply"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"coverNote\": \"I'm excited to apply for this role given my MERN background.\",\n  \"resumeUrl\": \"https://example.com/resume/ali.pdf\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data._id) { pm.collectionVariables.set('application_id', jsonData.data._id); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Apply Again - Should Fail With Duplicate Error (400)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/jobs/{{job_id}}/apply",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "jobs",
+                  "{{job_id}}",
+                  "apply"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"coverNote\": \"Trying again\",\n  \"resumeUrl\": \"https://example.com/resume/ali.pdf\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Duplicate application rejected with 400', function () { pm.response.to.have.status(400); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Get My Applications (Candidate)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/my-applications",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "my-applications"
+                ],
+                "query": [
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Get Application By Id",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/{{application_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "{{application_id}}"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Update Application Status (Recruiter, ownership check)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/{{application_id}}/status",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "{{application_id}}",
+                  "status"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"shortlisted\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Update Application Status - Wrong Recruiter Should Fail (403)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter2_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/{{application_id}}/status",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "{{application_id}}",
+                  "status"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"hired\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Non-owner recruiter rejected with 403', function () { pm.response.to.have.status(403); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Move Application To Interview Stage",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/{{application_id}}/status",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "{{application_id}}",
+                  "status"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"interview\"\n}"
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "6. Interviews",
+        "description": "",
+        "item": [
+          {
+            "name": "Schedule Interview (Recruiter, ownership check)",
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/interviews/applications/{{application_id}}/interview",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "interviews",
+                  "applications",
+                  "{{application_id}}",
+                  "interview"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"scheduledAt\": \"2026-09-15T10:00:00.000Z\",\n  \"mode\": \"online\",\n  \"meetingDetails\": \"https://meet.google.com/example-link\",\n  \"notes\": \"Initial screening round\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "var jsonData = pm.response.json();",
+                    "if (jsonData.data._id) { pm.collectionVariables.set('interview_id', jsonData.data._id); }"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Get Interview For Application",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/interviews/{{application_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "interviews",
+                  "{{application_id}}"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Update Interview (Recruiter, ownership check)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/interviews/{{interview_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "interviews",
+                  "{{interview_id}}"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"notes\": \"Rescheduled at candidate's request\",\n  \"scheduledAt\": \"2026-09-18T10:00:00.000Z\"\n}"
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "7. Dashboard",
+        "description": "Run before Cleanup \u2014 dashboards need the candidate account still active.",
+        "item": [
+          {
+            "name": "Candidate Dashboard",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/dashboard/candidate",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "dashboard",
+                  "candidate"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Recruiter Dashboard",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/dashboard/recruiter",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "dashboard",
+                  "recruiter"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Admin Dashboard",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/dashboard/admin",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "dashboard",
+                  "admin"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "8. Admin",
+        "description": "",
+        "item": [
+          {
+            "name": "Get Pending Companies (Admin)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/companies",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "companies"
+                ],
+                "query": [
+                  {
+                    "key": "status",
+                    "value": "pending"
+                  }
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Get All Companies (Admin)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/companies",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "companies"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Get All Users (Admin)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/users",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "users"
+                ],
+                "query": [
+                  {
+                    "key": "role",
+                    "value": "candidate"
+                  },
+                  {
+                    "key": "page",
+                    "value": "1"
+                  },
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Get Pending Jobs (Admin)",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/jobs",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "jobs"
+                ],
+                "query": [
+                  {
+                    "key": "status",
+                    "value": "pending"
+                  }
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "9. Negative / Auth Guard Tests",
+        "description": "Proves terminal-status locking and role guards actually work, not just that happy paths work.",
+        "item": [
+          {
+            "name": "No Token - Should Return 401",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/profile",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "profile"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Wrong Role Access - Candidate Hits Admin Route - Should Return 403",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/users",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "users"
+                ]
+              },
+              "description": ""
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Blocked with 403', function () { pm.response.to.have.status(403); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Apply After Terminal Rejection - Recruiter Tries Reopening Without Admin - Should Fail (400)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/{{application_id}}/status",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "{{application_id}}",
+                  "status"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"rejected\"\n}"
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Recruiter Tries Changing Own Rejected Application Again - Should Fail (400)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/{{application_id}}/status",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "{{application_id}}",
+                  "status"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"hired\"\n}"
+              }
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Terminal status blocked for non-admin', function () { pm.response.to.have.status(400); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Admin Overrides Terminal Status - Should Succeed",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/applications/{{application_id}}/status",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "applications",
+                  "{{application_id}}",
+                  "status"
+                ]
+              },
+              "description": "",
+              "body": {
+                "mode": "raw",
+                "raw": "{\n  \"status\": \"hired\"\n}"
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "10. Cleanup (run LAST \u2014 destructive)",
+        "description": "Deactivates the test candidate and deletes the test job. Running this earlier will break every request after it in this collection.",
+        "item": [
+          {
+            "name": "Deactivate Candidate User (Admin)",
+            "request": {
+              "method": "PATCH",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{admin_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/admin/users/{{candidate_user_id}}/deactivate",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "admin",
+                  "users",
+                  "{{candidate_user_id}}",
+                  "deactivate"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          },
+          {
+            "name": "Deactivated User Can No Longer Access API - Should Return 401",
+            "request": {
+              "method": "GET",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{candidate_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/auth/me",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "auth",
+                  "me"
+                ]
+              },
+              "description": ""
+            },
+            "response": [],
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "type": "text/javascript",
+                  "exec": [
+                    "pm.test('Deactivated user blocked with 401', function () { pm.response.to.have.status(401); });"
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "name": "Delete Job (Recruiter, ownership check)",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Authorization",
+                  "value": "Bearer {{recruiter_token}}"
+                }
+              ],
+              "url": {
+                "raw": "{{base_url}}/jobs/{{job_id}}",
+                "host": [
+                  "{{base_url}}"
+                ],
+                "path": [
+                  "jobs",
+                  "{{job_id}}"
+                ]
+              },
+              "description": ""
+            },
+            "response": []
+          }
+        ]
+      }
+    ]
+  }
